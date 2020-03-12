@@ -52,6 +52,11 @@ namespace PingPong
                 }
             }
 
+            foreach(var platform in platforms)
+            {
+                platform.Restart();
+            }
+
             started = true;
         }
 
@@ -120,11 +125,26 @@ namespace PingPong
                 {
                     if(platformPosition.y - position.y < radius)
                     {
-                        if (position.x + radius > platformPosition.x - platform.GetWidth() * 0.5f &&
-                            position.x - radius < platformPosition.x + platform.GetWidth() * 0.5f)
+                        if (position.x > platformPosition.x - platform.GetWidth() * 0.5f &&
+                            position.x < platformPosition.x + platform.GetWidth() * 0.5f)
                         {
                             HitPlatform(ball, platform);
                             return;
+                        }
+                        else
+                        {
+                            var sqrRadius = radius * radius;
+                            var ballPosition = position;
+                            var leftEdge = platformPosition;
+                            leftEdge.x -= platform.GetWidth() * 0.5f;
+                            leftEdge -= ballPosition;
+                            var rightEdge = platformPosition;
+                            rightEdge.x += platform.GetWidth() * 0.5f;
+                            rightEdge -= ballPosition;
+                            if (leftEdge.sqrMagnitude < sqrRadius || rightEdge.sqrMagnitude < sqrRadius)
+                            {
+                                HitPlatform(ball, platform);
+                            }
                         }
                     }
                 }
@@ -160,8 +180,14 @@ namespace PingPong
 
             ball.UpdatePosition(updateTime);
             ball.InvertSpeed(false, true);
+
+            var ballSpeed = ball.GetSpeed();
+            ballSpeed.x += platform.GetSpeed().x * 0.5f / ball.GetRadius();
+            ball.SetSpeed(ballSpeed);
+
             ball.UpdatePosition(-updateTime);
 
+            platform.Hit();
         }
 
         void CheckCollisionWithWalls(BallData ball)

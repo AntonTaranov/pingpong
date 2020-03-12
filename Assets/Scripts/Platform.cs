@@ -46,7 +46,12 @@ namespace PingPong
             {
                 var lastPosition = data.GetPosition();
                 data.SetPositionX(lastPosition.x + deltaX);
+                data.SetSpeed(new Vector2(deltaX / Time.deltaTime, 0));
                 UpdatePosition();
+            }
+            else
+            {
+                data.SetSpeed(Vector2.zero);
             }
         }
     }

@@ -7,6 +7,8 @@ namespace PingPong
 {
     public class GameController : MonoBehaviour
     {
+        [SerializeField] UIController UI = null;
+
         GameField gameField;
         CameraController cameraContorller;
         Simulator simulator;
@@ -22,6 +24,11 @@ namespace PingPong
 
         int ballsSpawned = 0;
         bool gameStarted = false;
+
+        List<PlatformData> platforms;
+        uint _score;
+
+        ScoreStorage scoreStorage;      
 
         void Awake()
         {
@@ -43,8 +50,12 @@ namespace PingPong
 
             simulator = new Simulator(fieldHeight, fieldHeight);
 
+            platforms = new List<PlatformData>();
+
             CreatePlatform(fieldHeight * 0.5f);
             CreatePlatform(-fieldHeight * 0.5f);
+
+            scoreStorage = new ScoreStorage();
         }
 
         void CreatePlatform(float positionY)
@@ -58,6 +69,8 @@ namespace PingPong
             var platformObject = new GameObject("Platform");
             var platformController = platformObject.AddComponent<Platform>();
             platformController.SetData(platformData);
+
+            platforms.Add(platformData);          
         }
 
         void SpawnBallInCenter()
@@ -78,6 +91,15 @@ namespace PingPong
         void RestartRound()
         {
             ballsSpawned = 0;
+
+            if (scoreStorage.Best < Score)
+            {
+                scoreStorage.Best = Score;
+            }
+
+            Score = 0;
+            UI?.SetBestResult(scoreStorage.Best);
+
             simulator.DeadBalls.Clear();
             SpawnBallInCenter();
         }
@@ -101,8 +123,31 @@ namespace PingPong
                 if (Input.GetMouseButton(0))
                 {
                     gameStarted = true;
+                    UI?.GameStarted();
                     RestartRound();
                 }
+            }
+            else
+            {
+                uint currentScore = 0;
+                foreach(var platform in platforms)
+                {
+                    currentScore += platform.Score;
+                }
+                if (currentScore != Score)
+                {
+                    Score = currentScore;                    
+                }
+            }
+        }
+
+        uint Score
+        {
+            get => _score;
+            set
+            {
+                _score = value;
+                UI?.SetScore(_score);
             }
         }
     }
