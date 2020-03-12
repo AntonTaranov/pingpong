@@ -14,10 +14,14 @@ namespace PingPong
         readonly float fieldWidth = 200;
         readonly float fieldHeight = 200;
 
-        readonly float minBallStartSpeed = 50;
-        readonly float maxBallStartSpeed = 100;
+        readonly float minBallStartSpeed = 100;
+        readonly float maxBallStartSpeed = 250;
 
-        float ballRadius = 5;
+        readonly float ballRadiusMin = 3;
+        readonly float ballRadiusMax = 10;
+
+        int ballsSpawned = 0;
+        bool gameStarted = false;
 
         void Awake()
         {
@@ -39,7 +43,6 @@ namespace PingPong
 
             simulator = new Simulator(fieldHeight, fieldHeight);
 
-            SpawnBallInCenter();
             CreatePlatform(fieldHeight * 0.5f);
             CreatePlatform(-fieldHeight * 0.5f);
         }
@@ -59,6 +62,7 @@ namespace PingPong
 
         void SpawnBallInCenter()
         {
+            var ballRadius = ballRadiusMin + Random.value * (ballRadiusMax - ballRadiusMin);
             var ballData = new BallData(ballRadius);
             simulator.SpawnBall(ballData);
 
@@ -67,11 +71,39 @@ namespace PingPong
             ballController.SetData(ballData);
                 
             simulator.StartMoving(minBallStartSpeed,maxBallStartSpeed);
+
+            ballsSpawned++;
+        }
+
+        void RestartRound()
+        {
+            ballsSpawned = 0;
+            simulator.DeadBalls.Clear();
+            SpawnBallInCenter();
         }
 
         void FixedUpdate()
         {
-            simulator?.Update(Time.fixedDeltaTime);
+            if (gameStarted && simulator != null)
+            {
+                simulator.Update(Time.fixedDeltaTime);
+                if (ballsSpawned == simulator.DeadBalls.Count)
+                {
+                    RestartRound();
+                }
+            }
+        }
+
+        void Update()
+        {
+            if (!gameStarted)
+            {
+                if (Input.GetMouseButton(0))
+                {
+                    gameStarted = true;
+                    RestartRound();
+                }
+            }
         }
     }
 }

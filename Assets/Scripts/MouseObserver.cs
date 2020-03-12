@@ -8,7 +8,8 @@ namespace PingPong
 
         Camera cam;
 
-        private Vector3 lastMousePosition;
+        Vector3 lastMousePosition;
+        bool mouseDown;
 
         void Start()
         {
@@ -20,11 +21,21 @@ namespace PingPong
             DeltaX = 0;
             if (Input.GetMouseButton(0))
             {
-                var mouseDelta = cam.ScreenToWorldPoint(Input.mousePosition) - lastMousePosition;
-
-                DeltaX = mouseDelta.x;
+                if (mouseDown)
+                {
+					var mouseDelta = cam.ScreenToWorldPoint(Input.mousePosition) - lastMousePosition;					
+					DeltaX = mouseDelta.x;
+                }
+                else
+                {
+                    mouseDown = true;
+                }
+                lastMousePosition = cam.ScreenToWorldPoint(Input.mousePosition);
             }
-            lastMousePosition = cam.ScreenToWorldPoint(Input.mousePosition);
+            else
+            {
+                mouseDown = false;
+            }
         }
     }
 }

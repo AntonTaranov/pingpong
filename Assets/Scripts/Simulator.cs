@@ -10,6 +10,8 @@ namespace PingPong
         List<BallData> balls;
         List<PlatformData> platforms;
 
+        List<BallData> deadBalls;
+
         float halfWidth;
         float halfHeight;
 
@@ -20,6 +22,8 @@ namespace PingPong
         {
             balls = new List<BallData>();
             platforms = new List<PlatformData>();
+            deadBalls = new List<BallData>();
+
             halfWidth = width * 0.5f;
             halfHeight = height * 0.5f;
         }
@@ -39,9 +43,13 @@ namespace PingPong
             foreach(var ball in balls)
             {
                 var speedValue = minSpeed + Random.value * (maxSpeed - minSpeed);
-                var speed = new Vector2(Random.value - 0.5f, Random.value - 0.5f);
+                var speed = new Vector2(Random.value - 0.5f, 0.2f + 0.3f * Random.value);
                 speed.Normalize();
                 ball.SetSpeed(speed * speedValue);               
+                if (Random.value > 0.5)
+                {
+                    ball.InvertSpeed(false, true);
+                }
             }
 
             started = true;
@@ -56,7 +64,33 @@ namespace PingPong
                 ball.UpdatePosition(deltaTime);
                 CheckCollisionWithWalls(ball);
                 CheckCollisionWithHorizontalPlatforms(ball);
+                if (IsBallOutsideField(ball))
+                {
+                    ball.Die();
+                    deadBalls.Add(ball);
+                }
             }
+            foreach (var ball in deadBalls)
+            {
+                if (balls.Contains(ball))
+                {
+                    balls.Remove(ball);
+                }
+            }
+        }
+
+        public List<BallData> DeadBalls
+        {
+            get => deadBalls;
+        }
+
+        bool IsBallOutsideField(BallData ball)
+        {
+            var position = ball.GetPosition();
+            if (position.y > halfHeight || position.y < - halfHeight){
+                return true;
+            }
+            return false;
         }
 
         void CheckFieldBoundsForPlatforms()
@@ -86,8 +120,8 @@ namespace PingPong
                 {
                     if(platformPosition.y - position.y < radius)
                     {
-                        if (position.x + radius > platformPosition.x - platform.GetWidth() &&
-                            position.x - radius < platformPosition.x + platform.GetWidth())
+                        if (position.x + radius > platformPosition.x - platform.GetWidth() * 0.5f &&
+                            position.x - radius < platformPosition.x + platform.GetWidth() * 0.5f)
                         {
                             HitPlatform(ball, platform);
                             return;
@@ -98,8 +132,8 @@ namespace PingPong
                 {
                     if (position.y - platformPosition.y <= radius)
                     {
-                        if (position.x + radius > platformPosition.x - platform.GetWidth() &&
-                            position.x - radius < platformPosition.x + platform.GetWidth())
+                        if (position.x + radius > platformPosition.x - platform.GetWidth() * 0.5f &&
+                            position.x - radius < platformPosition.x + platform.GetWidth() * 0.5f)
                         {
                             HitPlatform(ball, platform);
                             return;
@@ -182,7 +216,6 @@ namespace PingPong
                 ball.InvertSpeed(invertX, invertY);
                 ball.UpdatePosition(-updateTime);
             }
-
         }
            
     }

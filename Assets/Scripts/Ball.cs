@@ -41,7 +41,15 @@ namespace PingPong
 
         void Update()
         {
-            UpdatePosition();
+            if (data.IsAlive)
+            {
+                UpdatePosition();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+
         }
     }
 }

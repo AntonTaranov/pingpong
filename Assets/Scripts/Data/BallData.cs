@@ -7,6 +7,7 @@ namespace PingPong.Data
     public class BallData : MovingObject
     {
         float radius;
+        bool dead = false;
 
         public BallData(float radius)
         {
@@ -16,6 +17,16 @@ namespace PingPong.Data
         public float GetRadius()
         {
             return radius;
+        }
+
+        public void Die()
+        {
+            dead = true;
+        }
+
+        public bool IsAlive
+        {
+            get => !dead;
         }
 
         public void UpdatePosition(float deltaTime)
