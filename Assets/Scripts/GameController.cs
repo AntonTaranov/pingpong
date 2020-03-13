@@ -17,7 +17,7 @@ namespace PingPong
         readonly float fieldHeight = 200;
 
         readonly float minBallStartSpeed = 100;
-        readonly float maxBallStartSpeed = 250;
+        readonly float maxBallStartSpeed = 200;
 
         readonly float ballRadiusMin = 3;
         readonly float ballRadiusMax = 10;
@@ -52,15 +52,15 @@ namespace PingPong
 
             platforms = new List<PlatformData>();
 
-            CreatePlatform(fieldHeight * 0.5f);
-            CreatePlatform(-fieldHeight * 0.5f);
+            CreatePlatform(fieldHeight * 0.5f, Vector2.down);
+            CreatePlatform(-fieldHeight * 0.5f, Vector2.up);
 
             scoreStorage = new ScoreStorage();
         }
 
-        void CreatePlatform(float positionY)
+        void CreatePlatform(float positionY, Vector2 normal)
         {
-            var platformData = new PlatformData(30);
+            var platformData = new PlatformData(30, normal);
 			simulator.AddPlatform(platformData);
    
             platformData.SetPositionX(0);

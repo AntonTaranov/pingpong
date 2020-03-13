@@ -29,6 +29,12 @@ namespace PingPong.Data
             get => !dead;
         }
 
+        public void HitWithNormal(Vector2 normal)
+        {
+            var projection = Vector2.Dot(speed, normal) * normal * 2;
+            speed -= projection;
+        }
+
         public void UpdatePosition(float deltaTime)
         {
             position.x += deltaTime * speed.x;

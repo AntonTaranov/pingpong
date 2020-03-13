@@ -128,23 +128,12 @@ namespace PingPong
                         if (position.x > platformPosition.x - platform.GetWidth() * 0.5f &&
                             position.x < platformPosition.x + platform.GetWidth() * 0.5f)
                         {
-                            HitPlatform(ball, platform);
+                            HitPlatform(ball, platform, platform.Normal);
                             return;
                         }
-                        else
+                        else if (CheckHitOnEdge(ball, platform))
                         {
-                            var sqrRadius = radius * radius;
-                            var ballPosition = position;
-                            var leftEdge = platformPosition;
-                            leftEdge.x -= platform.GetWidth() * 0.5f;
-                            leftEdge -= ballPosition;
-                            var rightEdge = platformPosition;
-                            rightEdge.x += platform.GetWidth() * 0.5f;
-                            rightEdge -= ballPosition;
-                            if (leftEdge.sqrMagnitude < sqrRadius || rightEdge.sqrMagnitude < sqrRadius)
-                            {
-                                HitPlatform(ball, platform);
-                            }
+                            return;
                         }
                     }
                 }
@@ -152,10 +141,14 @@ namespace PingPong
                 {
                     if (position.y - platformPosition.y <= radius)
                     {
-                        if (position.x + radius > platformPosition.x - platform.GetWidth() * 0.5f &&
-                            position.x - radius < platformPosition.x + platform.GetWidth() * 0.5f)
+                        if (position.x > platformPosition.x - platform.GetWidth() * 0.5f &&
+                            position.x < platformPosition.x + platform.GetWidth() * 0.5f)
                         {
-                            HitPlatform(ball, platform);
+                            HitPlatform(ball, platform, platform.Normal);
+                            return;
+                        }
+                        else if (CheckHitOnEdge(ball, platform))
+                        {
                             return;
                         }
                     }
@@ -163,7 +156,30 @@ namespace PingPong
             }
         }
 
-        void HitPlatform(BallData ball, PlatformData platform)
+        bool CheckHitOnEdge(BallData ball, PlatformData platform)
+        {
+            var sqrRadius = ball.GetRadius() * ball.GetRadius();
+            var ballPosition = ball.GetPosition();
+            var leftEdge = platform.GetPosition();
+            leftEdge.x -= platform.GetWidth() * 0.5f;
+            leftEdge -= ballPosition;
+            var rightEdge = platform.GetPosition();
+            rightEdge.x += platform.GetWidth() * 0.5f;
+            rightEdge -= ballPosition;
+            if (leftEdge.sqrMagnitude < sqrRadius)
+            {
+                HitPlatform(ball, platform, -leftEdge.normalized);                
+                return true;
+            }
+            else if (rightEdge.sqrMagnitude < sqrRadius)
+            {
+                HitPlatform(ball, platform, -rightEdge.normalized);               
+                return true;
+            }
+            return false;
+        }
+
+        void HitPlatform(BallData ball, PlatformData platform, Vector2 normal)
         {
             float deltaY = 0;
             var ballPosition = ball.GetPosition();
@@ -179,7 +195,7 @@ namespace PingPong
             float updateTime = deltaY / ball.GetSpeed().y;
 
             ball.UpdatePosition(updateTime);
-            ball.InvertSpeed(false, true);
+            ball.HitWithNormal(normal);                    
 
             var ballSpeed = ball.GetSpeed();
             ballSpeed.x += platform.GetSpeed().x * 0.5f / ball.GetRadius();
